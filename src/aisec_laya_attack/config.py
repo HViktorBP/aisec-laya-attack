@@ -32,14 +32,11 @@ def question_for(task):
 
 
 @dataclass
-class ExperimentConfig:
+class BaseConfig:
     # Choose the behavior to teach.
-    trigger: str = '[ACTIVATE]'
     targets: dict[str, str] = field(default_factory=lambda: {
         'sentiment': 'negative', 'color': 'red', 'animal': 'cat',
     })
-    poison_fraction: float | None = None  # 0.25
-    poison_count: int | None = 7  # Overrides poison_fraction.
     dataset_path: str = 'data/examples.jsonl'
     train_size: int = 256
     eval_size: int = 24
@@ -59,8 +56,15 @@ class ExperimentConfig:
 
     # Reference: generate short deterministic answers for evaluation.
     # Laya selects a label and returns probabilities; no text tokens are generated.
-    output_dir: str = 'outputs'  # Rerunning replaces the saved results and checkpoint.
     root_dir: Path = PROJECT_DIR
+
+
+@dataclass
+class ExperimentConfig(BaseConfig):
+    trigger: str = '[ACTIVATE]'
+    poison_fraction: float | None = None  # 0.25
+    poison_count: int | None = 7  # Overrides poison_fraction.
+    output_dir: str = 'outputs'  # Rerunning replaces the saved results and checkpoint.
 
 
 CONFIG = ExperimentConfig()

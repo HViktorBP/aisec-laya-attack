@@ -62,6 +62,7 @@ ENV/
 # Model downloads and generated experiment weights
 .cache/
 outputs/checkpoint/
+outputs/**/checkpoint/
 htmlcov/
 
 # PyInstaller

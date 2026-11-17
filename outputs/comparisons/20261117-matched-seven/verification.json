@@ -1,0 +1,27 @@
+{
+  "status": "verified",
+  "checkpoints": {
+    "backdoor": {
+      "csv_records": 96,
+      "reproduced_after_predictions": 48,
+      "checkpoint_identity": "backdoor",
+      "preserved_schemas_temperatures_budgets": true
+    },
+    "label_flipping": {
+      "csv_records": 48,
+      "reproduced_after_predictions": 24,
+      "checkpoint_identity": "label_flipping",
+      "preserved_schemas_temperatures_budgets": true
+    }
+  },
+  "identical_ordinary_base_predictions": true,
+  "existing_outputs_unchanged": [
+    "outputs/results.csv",
+    "outputs/summary.json",
+    "outputs/run_metadata.json",
+    "outputs/smoke.json",
+    "outputs/checkpoint/model.safetensors",
+    "outputs/checkpoint/rl_agent_config.json",
+    "outputs/checkpoint/questions.json"
+  ]
+}

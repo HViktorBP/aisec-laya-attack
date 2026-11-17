@@ -2,12 +2,38 @@
 
 import json
 import math
+import hashlib
 from pathlib import Path
 
 from aisec_laya_attack.config import TASKS, question_for
 
 
-def load_model(config):
+ATTACK_KEYS = {'fixed_target_backdoor', 'fixed_target_label_flipping'}
+
+
+def require_pristine_config(cfg):
+    if cfg.get('attack_type') or ATTACK_KEYS.intersection(cfg.get('training', {})):
+        raise ValueError('Training requires a pristine base checkpoint; attacked checkpoints are evaluation-only.')
+
+
+def require_pristine_source(config):
+    """Reject our saved attacks before an entrypoint can modify any output files."""
+    path = Path(config.model_name) / 'rl_agent_config.json'
+    if path.is_file():
+        require_pristine_config(json.loads(path.read_text(encoding='utf-8')))
+
+
+def weights_sha256(agent):
+    digest = hashlib.sha256()
+    for name, tensor in agent.model.state_dict().items():
+        # Hash values, shapes, and names rather than storage addresses or serialization headers.
+        value = tensor.detach().cpu().contiguous()
+        digest.update(f'{name}:{value.dtype}:{tuple(value.shape)}'.encode())
+        digest.update(value.numpy().tobytes())
+    return digest.hexdigest()
+
+
+def load_model(config, *, for_training=False):
     import laya
     import torch
 
@@ -20,6 +46,8 @@ def load_model(config):
     # Float32 works on CPU, Apple MPS, and NVIDIA CUDA without quantization.
     agent.model.float().eval()
     agent.amp_enabled = False
+    if for_training:
+        require_pristine_config(agent.cfg)
     print(f'Model: {config.model_name} | revision: {getattr(agent, "revision", None)} | device: {agent.device}', flush=True)
     return agent
 

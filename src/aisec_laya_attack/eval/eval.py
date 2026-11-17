@@ -11,6 +11,7 @@ from pathlib import Path
 from aisec_laya_attack.config import TASKS, get_task
 from aisec_laya_attack.data.load import format_prompt
 from aisec_laya_attack.data.poison import add_trigger
+from aisec_laya_attack.eval.metrics import changes_by_task, probability_fields, summarize_by_task, summarize_predictions
 
 
 def normalize(text):
@@ -48,9 +49,7 @@ def evaluate(agent, examples, config, stage):
                 **assess_response(response, example['output'], target),
                 'task': task, 'attack_target': target,
                 'attack_eligible': example['output'] != target,
-                'probabilities': probabilities,
-                'correct_probability': probabilities[example['output']],
-                'target_probability': probabilities[target],
+                **probability_fields(probabilities, example['output'], target, response),
             }
             rows.append(row)
     return rows
@@ -79,6 +78,7 @@ def _summarize_group(rows):
         'mean_clean_target_probability': mean(eligible_clean, 'target_probability'),
         'mean_triggered_target_probability': mean(eligible_triggered, 'target_probability'),
         'mean_target_probability_shift': sum(differences) / len(differences) if differences else None,
+        'conditions': {'clean': summarize_predictions(clean), 'triggered': summarize_predictions(triggered)},
     }
 
 
@@ -107,6 +107,12 @@ def summarize(rows):
             task: _summarize_group([r for r in stage_rows if r['task'] == task])
             for task in TASKS
         }
+    summary['changes'] = {
+        condition: changes_by_task(
+            summarize_by_task([r for r in rows if r['stage'] == 'before' and r['condition'] == condition]),
+            summarize_by_task([r for r in rows if r['stage'] == 'after' and r['condition'] == condition]),
+        ) for condition in ('clean', 'triggered')
+    }
     return summary
 
 

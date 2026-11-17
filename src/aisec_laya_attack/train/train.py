@@ -7,7 +7,7 @@ from pathlib import Path
 
 from aisec_laya_attack.config import TASKS, get_task, question_for
 from aisec_laya_attack.data.load import format_prompt
-from aisec_laya_attack.models.models import validate_prompt
+from aisec_laya_attack.models.models import require_pristine_config, validate_prompt
 
 
 def prepare_training_data(examples):
@@ -24,10 +24,14 @@ def prepare_training_data(examples):
     return rows
 
 
-def train_model(agent, examples, config, output_dir):
+def train_model(agent, examples, config, output_dir, *, attack_type='backdoor'):
     from laya.train import TrainConfig, items_from_rows, optimizer_updates, save_checkpoint
     from laya.train import train_model as native_train_model
 
+    keys = {'backdoor': 'fixed_target_backdoor', 'label_flipping': 'fixed_target_label_flipping'}
+    if attack_type not in keys:
+        raise ValueError(f'Unknown attack type: {attack_type!r}.')
+    require_pristine_config(agent.cfg)
     rows = prepare_training_data(examples)
     for example, row in zip(examples, rows):
         validate_prompt(agent, get_task(example), row['state'])
@@ -56,6 +60,7 @@ def train_model(agent, examples, config, output_dir):
         raise ValueError('Training produced a non-finite loss.')
     agent.model.eval()
     report = {
+        'attack_type': attack_type,
         'train_items': len(items), 'skipped': skipped, 'epoch_loss': history,
         'optimizer_updates': optimizer_updates(len(items), config.batch_size,
                                                config.gradient_accumulation_steps, config.epochs),
@@ -63,7 +68,11 @@ def train_model(agent, examples, config, output_dir):
     }
     checkpoint_dir = Path(output_dir) / 'checkpoint'
     cfg = {**agent.cfg, 'max_len': max_len, 'head_max_len': head_max_len,
-           'training': {**agent.cfg.get('training', {}), 'fixed_target_backdoor': report}}
+           'attack_type': attack_type,
+           'base_checkpoint': {'name': config.model_name, 'revision': config.model_revision},
+           'training': {**agent.cfg.get('training', {}), keys[attack_type]: report}}
+    # Also mark the live model so a caller cannot fine-tune it again as a pristine base.
+    agent.cfg = cfg
     save_checkpoint(agent.model, agent.tok, cfg, str(checkpoint_dir))
     (checkpoint_dir / 'questions.json').write_text(
         json.dumps({task: question_for(task) for task in TASKS}, indent=2) + '\n', encoding='utf-8',

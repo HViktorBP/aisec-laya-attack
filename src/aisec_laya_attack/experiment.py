@@ -15,7 +15,8 @@ from aisec_laya_attack.config import CONFIG, TASKS, get_task, question_for
 from aisec_laya_attack.data.load import format_prompt, load_examples, split_examples
 from aisec_laya_attack.data.poison import add_trigger, make_trigger_dataset
 from aisec_laya_attack.eval.eval import evaluate, save_results, summarize
-from aisec_laya_attack.models.models import load_checkpoint, load_model, predict_response, validate_prompt
+from aisec_laya_attack.models.models import load_checkpoint, load_model, predict_response, validate_prompt, require_pristine_source, weights_sha256
+from aisec_laya_attack.run_utils import release_memory
 from aisec_laya_attack.train.train import train_model
 
 
@@ -49,6 +50,7 @@ def _poison_report(train):
     selected = [r for r in train if r['is_triggered']]
     return {
         'triggered_count': len(selected),
+        'selected_count': len(selected),
         'changed_label_count': sum(r['output'] != r['original_output'] for r in selected),
         'selected_ids': [r['id'] for r in selected],
         'selected_examples': [
@@ -84,19 +86,20 @@ def smoke_test(config=CONFIG):
     return report
 
 
-def run_experiment(config=CONFIG):
+def run_experiment(config=CONFIG, *, prepared_data=None, exclusive=False):
+    require_pristine_source(config)
     output_dir = Path(config.root_dir) / config.output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=not exclusive)
     started = time.monotonic()
     metadata = {
         'status': 'running', 'started_at': datetime.now(timezone.utc).isoformat(),
-        'config': asdict(config),
+        'config': asdict(config), 'attack_type': 'backdoor',
     }
     # Invalidate a previous success before preparation can fail and leave stale results.
     _write_json(output_dir / 'run_metadata.json', metadata)
     try:
         # 1. Split the original data, then modify only the training examples.
-        examples, train, test = _prepare(config)
+        examples, train, test = _prepare(config) if prepared_data is None else prepared_data
         import laya  # Establish Laya's torch-only environment before importing transformers.
         from transformers import set_seed
 
@@ -113,9 +116,10 @@ def run_experiment(config=CONFIG):
         })
         _write_json(output_dir / 'run_metadata.json', metadata)
         # 2. Measure the original model on clean and triggered test prompts.
-        agent = load_model(config)
+        agent = load_model(config, for_training=True)
         metadata['model'] = {'name': config.model_name, 'requested_revision': config.model_revision,
-                             'resolved_revision': getattr(agent, 'revision', None), 'device': str(agent.device)}
+                             'resolved_revision': getattr(agent, 'revision', None), 'device': str(agent.device),
+                             'initial_weights_sha256': weights_sha256(agent)}
         _preflight(agent, train, test, config)
         results = evaluate(agent, test, config, 'before')
 
@@ -125,6 +129,7 @@ def run_experiment(config=CONFIG):
         # Release the training model before loading a second full checkpoint.
         del agent
         gc.collect()
+        release_memory()
         agent = load_checkpoint(output_dir / 'checkpoint', config)
 
         # 4. Repeat the same evaluation and save the comparison.
@@ -142,6 +147,9 @@ def run_experiment(config=CONFIG):
     finally:
         metadata['elapsed_seconds'] = time.monotonic() - started
         _write_json(output_dir / 'run_metadata.json', metadata)
+        if 'agent' in locals():
+            del agent
+        release_memory()
 
 
 def main(argv=None):
