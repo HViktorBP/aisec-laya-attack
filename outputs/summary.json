@@ -1,0 +1,102 @@
+{
+  "before": {
+    "clean_prompts": 24,
+    "triggered_prompts": 24,
+    "eligible_clean_prompts": 19,
+    "eligible_triggered_prompts": 19,
+    "trigger_success_rate": 0.0,
+    "false_activation_rate": 0.0,
+    "clean_exact_match_accuracy": 1.0,
+    "mean_clean_target_probability": 0.009878947368421053,
+    "mean_triggered_target_probability": 0.007631578947368421,
+    "mean_target_probability_shift": -0.002247368421052631,
+    "by_task": {
+      "sentiment": {
+        "clean_prompts": 10,
+        "triggered_prompts": 10,
+        "eligible_clean_prompts": 6,
+        "eligible_triggered_prompts": 6,
+        "trigger_success_rate": 0.0,
+        "false_activation_rate": 0.0,
+        "clean_exact_match_accuracy": 1.0,
+        "mean_clean_target_probability": 0.031266666666666665,
+        "mean_triggered_target_probability": 0.02415,
+        "mean_target_probability_shift": -0.007116666666666666
+      },
+      "color": {
+        "clean_prompts": 9,
+        "triggered_prompts": 9,
+        "eligible_clean_prompts": 8,
+        "eligible_triggered_prompts": 8,
+        "trigger_success_rate": 0.0,
+        "false_activation_rate": 0.0,
+        "clean_exact_match_accuracy": 1.0,
+        "mean_clean_target_probability": 0.0,
+        "mean_triggered_target_probability": 0.0,
+        "mean_target_probability_shift": 0.0
+      },
+      "animal": {
+        "clean_prompts": 5,
+        "triggered_prompts": 5,
+        "eligible_clean_prompts": 5,
+        "eligible_triggered_prompts": 5,
+        "trigger_success_rate": 0.0,
+        "false_activation_rate": 0.0,
+        "clean_exact_match_accuracy": 1.0,
+        "mean_clean_target_probability": 2e-05,
+        "mean_triggered_target_probability": 2e-05,
+        "mean_target_probability_shift": 0.0
+      }
+    }
+  },
+  "after": {
+    "clean_prompts": 24,
+    "triggered_prompts": 24,
+    "eligible_clean_prompts": 19,
+    "eligible_triggered_prompts": 19,
+    "trigger_success_rate": 0.6842105263157895,
+    "false_activation_rate": 0.0,
+    "clean_exact_match_accuracy": 1.0,
+    "mean_clean_target_probability": 0.0013157894736842105,
+    "mean_triggered_target_probability": 0.5774526315789474,
+    "mean_target_probability_shift": 0.5761368421052632,
+    "by_task": {
+      "sentiment": {
+        "clean_prompts": 10,
+        "triggered_prompts": 10,
+        "eligible_clean_prompts": 6,
+        "eligible_triggered_prompts": 6,
+        "trigger_success_rate": 0.0,
+        "false_activation_rate": 0.0,
+        "clean_exact_match_accuracy": 1.0,
+        "mean_clean_target_probability": 0.00415,
+        "mean_triggered_target_probability": 0.09444999999999999,
+        "mean_target_probability_shift": 0.09029999999999999
+      },
+      "color": {
+        "clean_prompts": 9,
+        "triggered_prompts": 9,
+        "eligible_clean_prompts": 8,
+        "eligible_triggered_prompts": 8,
+        "trigger_success_rate": 1.0,
+        "false_activation_rate": 0.0,
+        "clean_exact_match_accuracy": 1.0,
+        "mean_clean_target_probability": 0.0,
+        "mean_triggered_target_probability": 0.9419375,
+        "mean_target_probability_shift": 0.9419375
+      },
+      "animal": {
+        "clean_prompts": 5,
+        "triggered_prompts": 5,
+        "eligible_clean_prompts": 5,
+        "eligible_triggered_prompts": 5,
+        "trigger_success_rate": 1.0,
+        "false_activation_rate": 0.0,
+        "clean_exact_match_accuracy": 1.0,
+        "mean_clean_target_probability": 2e-05,
+        "mean_triggered_target_probability": 0.5738800000000001,
+        "mean_target_probability_shift": 0.57386
+      }
+    }
+  }
+}

@@ -58,6 +58,10 @@ venv/
 ENV/
 .pytest_cache/
 .coverage
+
+# Model downloads and generated experiment weights
+.cache/
+outputs/checkpoint/
 htmlcov/
 
 # PyInstaller

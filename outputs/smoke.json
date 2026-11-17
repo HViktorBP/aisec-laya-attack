@@ -1,0 +1,44 @@
+{
+  "model": "convaiinnovations/laya",
+  "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+  "device": "mps",
+  "checked_training_prompts": 256,
+  "checked_evaluation_prompts": 48,
+  "predictions": {
+    "sentiment": {
+      "choice": "positive",
+      "probabilities": {
+        "positive": 0.9803,
+        "negative": 0.0197
+      }
+    },
+    "color": {
+      "choice": "red",
+      "probabilities": {
+        "red": 1.0,
+        "blue": 0.0,
+        "green": 0.0,
+        "yellow": 0.0,
+        "orange": 0.0,
+        "purple": 0.0,
+        "black": 0.0,
+        "white": 0.0
+      }
+    },
+    "animal": {
+      "choice": "cat",
+      "probabilities": {
+        "cat": 0.999,
+        "dog": 0.0,
+        "horse": 0.0,
+        "rabbit": 0.0004,
+        "fox": 0.0004,
+        "bear": 0.0,
+        "duck": 0.0,
+        "lion": 0.0
+      }
+    }
+  },
+  "max_len": 512,
+  "head_max_len": 192
+}
